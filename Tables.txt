@@ -1,0 +1,20 @@
+Table names:
+
+Banner_Products
+Banners
+Brand_Images
+admins
+approved_orders
+asks
+banner_images
+bids
+brands
+customers
+header_images
+most_popular_products
+mpp_images
+orders
+popular_images
+popular_products
+product_images
+products
