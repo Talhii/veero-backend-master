@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>Enter ask and bids</title>
+   
+  
+</head>
+<body>
+
+    <h3>Enter User Id here</h3>
+    <input type="text" size="30" style="height:20px" id="userid-input">
+    <br>
+    <h3>Enter User name here</h3>
+    <input type="text" size="30" style="height:20px" id="name-input">
+    <br>
+    <h3>Enter productid</h3>
+    <input type="text" size="30" style="height:20px" id="product-id">
+    <br>
+    <br>
+    <h3>Enter productname</h3>
+    <input type="text" size="30" style="height:20px" id="product-input">
+    <br>
+    <br><br>
+
+    <h3>Bid</h3>
+    <input type="text" size="20" id="bid-input">
+     <br>
+    <button type="submit" id="send-bid">Send bid</button>
+    <button type="submit" id="matchbestask">Order with best price</button>
+    <button type="submit" id="update-bid">Update Bid</button>
+
+    <br>
+    <br>
+   <div id="yourbid"></div>
+   <h2>OR</h2>
+   <h3>Ask</h3>
+    <input type="text" size="20" id="ask-input">
+    <br>
+    <button type="submit" id="send-ask">Send ask</button>
+    <button type="submit" id="matchbestbid">Order with best price</button>
+    <button type="submit" id="update-ask">Update Ask</button>
+    
+
+    <div id="yourask"></div>
+
+    <div id="order-matching"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+       
+//const socket = io('http://54.189.70.25');
+const socket = io();
+const connected = document.getElementById('connected')
+const yourbid = document.getElementById('yourbid')
+const yourask = document.getElementById('yourask')
+const sendbid = document.getElementById('send-bid')
+const sendask = document.getElementById('send-ask')
+const matchbestask = document.getElementById('matchbestask')
+const matchbestbid = document.getElementById('matchbestbid')
+const updatebid = document.getElementById('update-bid')
+const updateask = document.getElementById('update-ask')
+const ordermatching = document.getElementById('order-matching')
+
+
+var userid = document.getElementById('userid-input')
+var username = document.getElementById('name-input')
+var productid = document.getElementById('product-id')
+var productname = document.getElementById('product-input')
+var askInput = document.getElementById('ask-input')
+var bidInput = document.getElementById('bid-input')
+
+
+// ()=>
+// {
+//    socket.emit('authenticate', {token :'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhbGhhQGdtYWlsLmNvbSIsImlhdCI6MTU5Mzc4NTc2N30.TtHKeW_MXwIlT5O1owLP3vporVKh1p0M5CGlBLz5kB'})
+//    .on('authenticated' , () => {
+//       console.log('You are Authenticated!');
+
+
+socket.on('connect',()=>
+{
+   console.log('Connected!');
+});
+sendbid.addEventListener('click',function()
+{
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    const bid = bidInput.value
+    
+     if(userids =='' || usernames == '' || productids == '' || productnames == '' || bid == '')
+     {
+        alert("Please enter all values")
+     }
+     else if (isNaN(bid))
+     {
+        alert("Please enter numbervalue")
+     }
+     else
+     {
+        console.log('emitting new bid event')
+        socket.emit('new bid',
+        {
+           userid : userids,
+           username: usernames,
+           productid : productids,
+           productname : productnames,
+           bid : bid,
+         //  token : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRhbGhhQGdtYWlsLmNvbSIsImlhdCI6MTU5Mzc4NTc2N30.TtHKeW_MXwIlT5O1owLP3vporVKh1p0M5CGlBLz5kB8'
+        })
+
+        yourbid.innerHTML = "Yours bid : "+ bid
+     }
+     bidInput.value = ''
+     socket.on('BidNotPlaced',()=>
+     {
+        console.log('Bid Not Placed!');
+      });
+
+     socket.once('Bid Placed',function()
+     {
+        console.log('Bid Placed');
+     });
+       
+});
+  
+
+sendask.addEventListener('click',function(){
+    //will must get all of these values from frontend automatically this is just for showing its workprocess
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    const ask = askInput.value
+    
+  
+    if(userids =='' || usernames == '' || productids == '' || productnames == '' || ask == '')
+    {
+       alert("Please enter all values")
+    }
+    else if (isNaN(ask)){
+        alert("Please enter numbervalue")
+    }
+    else
+    {
+       socket.emit('new ask', 
+       {
+          userids:userids,
+          usernames: usernames,
+          ask: ask,productids:productids,
+          ask:ask,
+          productnames:productnames
+         })
+       yourask.innerHTML = "Your ask : "+ ask
+       socket.once('askplaced',()=>
+       {
+         
+          console.log('Ask Placed');
+       })
+    }
+    askInput.value = ''
+})
+
+matchbestask.addEventListener('click',function(){
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    if(userids =='' || usernames == '' || productids == '' || productnames == '' )
+     {
+        alert("Please enter all values")
+     }
+    else
+    {
+        socket.emit('comparebestask',
+        {
+           productids,
+           userids
+        })
+    }
+   
+})
+
+matchbestbid.addEventListener('click',function(){
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    if(userids =='' || usernames == '' || productids == '' || productnames == '' )
+     {
+        alert("Please enter all values")
+     }
+    else
+    {
+      
+        socket.emit('comparebestbid',productids);
+    }
+   
+})
+
+updatebid.addEventListener('click',function(){
+ //will must get all of these values from frontend automatically this is just for showing its workprocess
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    const bid = bidInput.value
+    
+     if(userids =='' || usernames == '' || productids == '' || productnames == '' || bid == '')
+     {
+        alert("Please enter all values")
+     }
+     else if (isNaN(bid)){
+        alert("Please enter numbervalue")
+     }
+     else
+     {
+        socket.emit('updatebid', 
+        {
+           userids:userids,
+           usernames: usernames,
+           productids:productids,
+           bid:bid,
+           productnames:productnames
+         })
+        
+        yourbid.innerHTML = "Your Updated bid : "+ bid
+        socke.on('bidupdated',()=>
+        {
+           console.log('Bid Updated');
+        })
+     }
+     bidInput.value = ''
+     
+})
+
+updateask.addEventListener('click',function(){
+
+    const userids = userid.value
+    const usernames = username.value
+    const productids = productid.value
+    const productnames = productname.value 
+    const ask = askInput.value
+    
+     if(userids =='' || usernames == '' || productids == '' || productnames == '' || ask == '')
+     {
+        alert("Please enter all values")
+     }
+     else if (isNaN(ask)){
+        alert("Please enter numbervalue")
+     }
+     else
+     {
+        console.log('Sending Update Event')
+        socket.emit('updateask', {userids:userids,usernames: usernames,productids:productids,ask:ask,productnames:productnames})
+        yourask.innerHTML = "Your Updated ask : "+ ask
+        socket.on('askupdated',()=>
+        {
+           console.log('Ask Updated');
+        })
+     }
+     askInput.value = ''
+     
+})
+
+
+   socket.on('twice ask',()=>
+   {
+      yourask.innerHTML = 'You can not place ask twice on same Product. Update It!';
+   })
+
+
+   socket.on('twice bid',()=>
+   {
+      yourbid.innerHTML = 'You can not place bid twice on same product. Update it!';
+   })
+
+    socket.on('comparebestask2',function(data){
+       console.log('checking');
+   
+      var check=''
+      
+      if(typeof data == typeof check)
+      {
+         console.log('Best Price Does Not Exist!');
+         ordermatching.innerHTML='Best Price Does Not Exist!';
+      }
+      else
+      {
+        const userids = userid.value
+        const usernames = username.value
+       ordermatching.innerHTML = "Order Executed with Best ask price : "+ data[0].Ask+"Sellername : "+ data[0].User_Name
+       socket.emit('deletebestask',{id:data[0].Id,productid:data[0].Product_Id})
+      socket.emit('updateordersbestask',{buyerid:userids,buyername:usernames,sellerid:data[0].User_Id,sellername :data[0].User_Name,price : data[0].Ask,productid:data[0].Product_Id,productname:data[0].Product_Name})  
+      } 
+   })
+
+    socket.on('comparebestbid2',function(data){
+      var check = ''
+      if(typeof data == typeof check)
+       {
+          console.log('Best Price Does Not Exist!');
+          ordermatching.innerHTML = 'Best Price Does Not Exist!';
+       }
+       else
+       {
+        const userids = userid.value
+        const usernames = username.value
+
+       ordermatching.innerHTML = "Order Executed with Best bid price : "+ data[0].Bid+" buyername : "+ data[0].User_Name
+       socket.emit('deletebestbid',{id:data[0].Id,productid:data[0].Product_Id})
+      socket.emit('updateordersbestbid',{buyerid:data[0].User_Id,buyername:data[0].User_Name,sellerid :userids,sellername :usernames,price : data[0].Bid,productid:data[0].Product_Id,productname:data[0].Product_Name})  
+       } 
+   })
+
+    socket.on('compare',({ask1, bid1 })=>{
+       
+        a=0
+        for(var i =0 ; i<ask1.length && a==0;i++)  {
+            for(var j =0 ; j<bid1.length && a==0;j++) {
+
+              if(ask1[i].Ask == bid1[j].Bid && ask1[i].Product_Id ==bid1[j].Product_Id )
+              {
+                  ordermatching.innerHTML ="Order executed : "+"Ask Price :"+ask1[i].Ask+"Productname :"+ask1[i].Product_Name+"  &&  Bid Price : "+bid1[j].Bid+"Productname "+bid1[j].Product_Name
+                  socket.emit('delete',{askid:ask1[i].Id,bidid:bid1[j].Id,askingproductid:ask1[i].Product_Id,bidingproductid : bid1[j].Product_Id})
+                  socket.emit('updateorders',{buyerid:bid1[j].User_Id,buyername:bid1[j].User_Name,sellerid :ask1[i].User_Id,sellername :ask1[i].User_Name,price : ask1[i].Ask,productid:bid1[j].Product_Id,productname:bid1[j].Product_Name})
+                  a=1
+              }
+            }
+         }
+    })
+
+ // authenticated braces closed 
+   // }).on('unauthorized',(msg)=>
+   // {
+   //    console.log('Unauthorized!');
+   //    ordermatching.innerHTML = 'You are not Logged In!'
+   // })
+  
+//   })
+</script>
+   
+</body>
+</html>
